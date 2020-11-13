@@ -40,7 +40,7 @@ int main(void)
 
 	if (my_rank == 0) {
     double avg = MPI_Average(subavgs, comm_sz);
-    printf("Avg of all elements is %f\n", avg);
+    printf("Avg of all the teams is %f\n", avg);
   }
 	MPI_Finalize();
       return(0);
