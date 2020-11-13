@@ -24,6 +24,7 @@ int main(void)
 							18.4,19.4,19.5,19.6,19.7,20,20.1,20.2,20.6,20.9,20.9,21,21.2,
 							21.5,21.7,21.7,23.4,26.3,27.6};
 	size = sizeof(fantasyPoints)/sizeof(fantasyPoints[0]);
+	
 	local_size = size/comm_sz;
 	double *ar = malloc(local_size*sizeof(double));
 	MPI_Scatter(fantasyPoints,local_size,MPI_DOUBLE,ar,local_size,MPI_DOUBLE,0,comm);
@@ -41,25 +42,10 @@ int main(void)
     double avg = MPI_Average(subavgs, comm_sz);
     printf("Avg of all elements is %f\n", avg);
   }
-
-
 	MPI_Finalize();
       return(0);
 }
 
-void serialAverage(double fantasyPoints[])
-{
-	double sum=0;
-	for(int i=0; i<size; ++i)
-	{
-
-		sum+=fantasyPoints[i];
-	}
-	double avg=sum/size;
-	printf("%s", "The average for the fantasy teams is " );
-	printf("%f\n",avg);
-
-}
 double MPI_Average(double *ar, int local_size)
 {
 	double sum=0;
