@@ -51,13 +51,14 @@ void serialAverage(double fantasyPoints[])
 }
 void MPI_Average(int local_size, MPI_Comm comm, double ars[])
 {
-	unsigned long long* Ar;
+	double * Ar;
     Ar = malloc(size*sizeof(double));
 	MPI_Allgather(ars, local_size, MPI_DOUBLE, Ar, local_size, MPI_DOUBLE, comm);
 	//printf("%d\n",local_size );
 	for(int i=0; i < local_size; ++i)
 	{
-		average(ars[i]);
+		average(Ar[i]);
+		//printf("%f\n",Ar[i] );
 	}
 	printf("%s\n", "The average is " );
 	printf("%f\n", avg2);
