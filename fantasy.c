@@ -15,14 +15,14 @@ int main(void)
 {
 	int my_rank, local_size, comm_sz;
 	MPI_Comm comm;
-	clock_t start, end;
-	double cpu_time_used;
-    MPI_Init(NULL, NULL);
-    comm = MPI_COMM_WORLD;
-    MPI_Comm_size(comm, &comm_sz);
-    MPI_Comm_rank(comm, &my_rank);
 	
-    double fantasyPoints[]= {240.4,239.5,236.1,220.6,187.6,185.1,183.8,179.7,177.5,175.4,168.7,164.6,163.5,163.4,158.0,154.8,151.6,148.8,
+	double start, end, totalTime;
+    	MPI_Init(NULL, NULL);
+    	comm = MPI_COMM_WORLD;
+    	MPI_Comm_size(comm, &comm_sz);
+    	MPI_Comm_rank(comm, &my_rank);
+	
+    	double fantasyPoints[]= {240.4,239.5,236.1,220.6,187.6,185.1,183.8,179.7,177.5,175.4,168.7,164.6,163.5,163.4,158.0,154.8,151.6,148.8,
     	145.8,142.9,141.7,140.4,138.8,138.6,135.3,133.7,131.2,125.8,124.8,124.2,122.5,120.3,120.2,116.3,115.5,111.0,110.9,108.9,106.2,105.3,
     	105.1,104.9,103.5,99.3,99.0,95.0,94.3,94.0,94.0,93.5,89.4,89.1,88.4,88.0,87.6,87.5,87.1,86.9,86.0,85.7,85.1,84.0,83.4,83.3,83.0,83.0,
     	82.7,82.0,82.0,82.0,82.0,82.0,81.8,81.8,81.7,81.5,81.4,81.0,81.0,81.0,81.0,80.8,80.6,80.4,79.4,79.0,78.9,78.8,78.6,78.1,77.0,77.0,76.3,
@@ -46,34 +46,39 @@ int main(void)
     	0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,
     	0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,
     	0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,-0.1,-0.5,-0.6,-0.9,-1.0,-1.2,-1.6,-2.0};
-	size = sizeof(fantasyPoints)/sizeof(fantasyPoints[0]);
 	
+	size = sizeof(fantasyPoints)/sizeof(fantasyPoints[0]);
 	local_size = size/comm_sz;
 	double *ar = malloc(local_size*sizeof(double));
-	//scatter the values among the threads
-	start = clock();
+	double  *subavgs = NULL;
+
+	start = MPI_Wtime();
 	MPI_Scatter(fantasyPoints,local_size,MPI_DOUBLE,ar,local_size,MPI_DOUBLE,0,comm);
 	double subavg = MPI_Average(ar,local_size);
-
-	double  *subavgs = NULL;
-	if (my_rank==0)
-	{
+	if (my_rank == 0) {
 		subavgs = malloc(sizeof(double)* comm_sz);
 		assert(subavgs != NULL);
-	}
+		
+  	}		
 	//gather the values among the subavg array
 	MPI_Gather(&subavg, 1, MPI_DOUBLE, subavgs, 1, MPI_DOUBLE, 0, comm);
+	end = MPI_Wtime() - start;
 
-	if (my_rank == 0) {
-	//calculare the average of the subaverages
-    double avg = MPI_Average(subavgs, comm_sz);
-    printf("Avg of all the teams is %f\n", avg);
-  }
-  end = clock();
-  cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-  printf("Time taken %f\n",cpu_time_used);
+	if (my_rank == 0){
+		//calculate the average of the subaverages
+        	double avg = MPI_Average(subavgs, comm_sz);
+        	printf("Avg of all the teams is %f\n", avg);
+		end = MPI_Wtime() - start;
+	}
+	MPI_Barrier(MPI_COMM_WORLD);
+   	MPI_Reduce(&end, &totalTime, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	if(my_rank == 0){
+		printf("Total time: %f\n", totalTime);
+	}
+		
 	MPI_Finalize();
-      return(0);
+	
+        return(0);
 }
 
 double MPI_Average(double *ar, int local_size)
