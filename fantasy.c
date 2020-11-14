@@ -50,11 +50,12 @@ int main(void)
 	size = sizeof(fantasyPoints)/sizeof(fantasyPoints[0]);
 	local_size = size/comm_sz;
 	double *ar = malloc(local_size*sizeof(double));
-	double  *subavgs = NULL;
 
 	start = MPI_Wtime();
 	MPI_Scatter(fantasyPoints,local_size,MPI_DOUBLE,ar,local_size,MPI_DOUBLE,0,comm);
 	double subavg = MPI_Average(ar,local_size);
+	double  *subavgs = NULL;
+	
 	if (my_rank == 0) {
 		subavgs = malloc(sizeof(double)* comm_sz);
 		assert(subavgs != NULL);
@@ -62,8 +63,9 @@ int main(void)
   	}		
 	//gather the values among the subavg array
 	MPI_Gather(&subavg, 1, MPI_DOUBLE, subavgs, 1, MPI_DOUBLE, 0, comm);
-	end = MPI_Wtime() - start;
-
+	if(my_rank != 0){
+		end = MPI_Wtime() - start;
+	}
 	if (my_rank == 0){
 		//calculate the average of the subaverages
         	double avg = MPI_Average(subavgs, comm_sz);
