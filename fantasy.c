@@ -53,7 +53,7 @@ int main(void)
 
 	start = MPI_Wtime();
 	MPI_Scatter(fantasyPoints,local_size,MPI_DOUBLE,ar,local_size,MPI_DOUBLE,0,comm);
-	double partialSum = MPI_Sum(ar,local_size);
+	double subavg = MPI_Average(ar,local_size);
 	double  *subavgs = NULL;
 	
 	if (my_rank == 0) {
@@ -62,7 +62,7 @@ int main(void)
 		
   	}		
 	//gather the values among the subavg array
-	MPI_Gather(&partialSum, 1, MPI_DOUBLE, subavgs, 1, MPI_DOUBLE, 0, comm);
+	MPI_Gather(&subavg, 1, MPI_DOUBLE, subavgs, 1, MPI_DOUBLE, 0, comm);
 	if(my_rank != 0){
 		end = MPI_Wtime() - start;
 	}
@@ -83,17 +83,7 @@ int main(void)
         return(0);
 }
 
-double MPI_Sum(double *ar, int local_size)
-{
-	double sum=0;
-	int i;
-	for(i=0; i < local_size; ++i)
-	{
-		sum+=ar[i];
-	}
-]
-
-double MPI_Average(double sum, int local_size)
+double MPI_Average(double *ar, int local_size)
 {
 	return sum/local_size;
 }
