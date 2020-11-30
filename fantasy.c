@@ -1,3 +1,6 @@
+//Noah Krill and Jaron Smith
+//This project takes the array or fantasy points for each player and finds the average
+//using MPI
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -13,15 +16,19 @@ int my_rank;
 
 int main(void)
 {
+    //declaring the variables used by mpi to get it to run properly
 	int my_rank, local_size, comm_sz;
 	MPI_Comm comm;
-	clock_t start, end;
-	double cpu_time_used;
     MPI_Init(NULL, NULL);
     comm = MPI_COMM_WORLD;
     MPI_Comm_size(comm, &comm_sz);
     MPI_Comm_rank(comm, &my_rank);
-	
+    //Declaring the variables for the timing of the program
+	clock_t start, end;
+	double cpu_time_used;
+
+	//If this was a bigger project I would suggest moving this array into 
+    //its own file but for this term project this will do nicely
     double fantasyPoints[]= {240.4,239.5,236.1,220.6,187.6,185.1,183.8,179.7,177.5,175.4,168.7,164.6,163.5,163.4,158.0,154.8,151.6,148.8,
     	145.8,142.9,141.7,140.4,138.8,138.6,135.3,133.7,131.2,125.8,124.8,124.2,122.5,120.3,120.2,116.3,115.5,111.0,110.9,108.9,106.2,105.3,
     	105.1,104.9,103.5,99.3,99.0,95.0,94.3,94.0,94.0,93.5,89.4,89.1,88.4,88.0,87.6,87.5,87.1,86.9,86.0,85.7,85.1,84.0,83.4,83.3,83.0,83.0,
@@ -77,7 +84,7 @@ int main(void)
 	MPI_Finalize();
       return(0);
 }
-
+//This functuin calculates and returns the average
 double MPI_Average(double *ar, int local_size)
 {
 	double sum=0;
